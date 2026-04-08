@@ -1,19 +1,25 @@
 import { AuthContext } from "@/context/AuthProvider";
 import { Credencial } from "@/model/types";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { router } from "expo-router";
 import { useContext, useState } from "react";
-import { Image, ScrollView } from "react-native";
+import { Controller, useForm } from "react-hook-form";
+import { Image, ScrollView, StyleSheet, View } from "react-native";
+import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as yup from "yup";
 
 const requiredMessage = "Campo obrigatório";
 
 const schema = yup
   .object()
   .shape({
-    email: yup.string
+    email: yup
+      .string()
       .required(requiredMessage)
       .matches(/\S+@\S+\.\S+/, "Email inválido"),
-    senha: yup.string
+    senha: yup
+      .string()
       .required(requiredMessage)
       .matches(
         /^(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[$*&@#])[0-9a-zA-Z$*&@#]{8,}$/,
@@ -26,7 +32,7 @@ export default function Entrar() {
   const { signIn } = useContext<any>(AuthContext);
   const theme = useTheme();
   const {
-    constrol,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<any>({
@@ -63,7 +69,7 @@ export default function Entrar() {
         showsVerticalScrollIndicator={false}
       >
         <>
-          <Image style={styles.image} source={require("../assets/images/")} />
+          <Image style={styles.image} source={require("../assets/images/shoal/Shoal(Logo).png")} />
           <Controller
             control={control}
             render={({ field: { onChange, onBlur, value } }) => (
@@ -78,7 +84,7 @@ export default function Entrar() {
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
-                right={<TextInput.Icon icon="email" />}
+                right={<TextInput.Icon icon="email"/>}
               />
             )}
             name="email"
@@ -161,3 +167,44 @@ export default function Entrar() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		alignItems: "center",
+	},
+	image: {
+		width: 200,
+		height: 200,
+		alignSelf: "center",
+		borderRadius: 200 / 2,
+		marginTop: 100,
+		marginBottom: 40,
+	},
+	textinput: {
+		width: 350,
+		height: 50,
+		marginTop: 20,
+		backgroundColor: "transparent",
+	},
+	button: {
+		marginTop: 50,
+		marginBottom: 30,
+	},
+	textDialog: {
+		textAlign: "center",
+	},
+	textError: {
+		width: 350,
+	},
+	divCadastro: {
+		marginTop: 20,
+		flexDirection: "row",
+		justifyContent: "center",
+	},
+	textCadastro: {},
+	textEsqueceuSenha: {
+		alignSelf: "flex-end",
+		marginTop: 20,
+	},
+});
