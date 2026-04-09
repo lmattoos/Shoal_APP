@@ -1,17 +1,17 @@
-import { auth } from "@/firebase/firebaseinit";
+import { auth, firestore } from "@/firebase/firebaseinit";
 import { Credencial } from "@/model/types";
-import { signInWithEmailAndPassword } from "@firebase/auth";
+import { Usuario } from "@/model/Usuario";
+import { createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, signOut } from "@firebase/auth";
 import * as SecureStore from "expo-secure-store";
-import { createContext, useState } from "react";
+import { doc, setDoc } from "firebase/firestore";
+import { createContext } from "react";
 
 export const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }: any) => {
-  const [userFirebase, setUserFirebase] = useState<any>(null);
-
   async function armazenaCredencialnaCache(credencial: Credencial): Promise<void> {
     try {
-      await SecureStore.setItem("credencial", JSON.stringify(credencial));
+      await SecureStore.setItemAsync("credencial", JSON.stringify(credencial));
     } catch (e){
       console.error("Erro ao armazenar credencial na cache: ", e);
     }
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }: any) => {
 
   async function recuperaCredencialdaCache(): Promise<Credencial | null> {
     try {
-      const credencial = await SecureStore.getItem("credencial");
+      const credencial = await SecureStore.getItemAsync("credencial");
       if (credencial) {
         return JSON.parse(credencial);
       }
@@ -30,6 +30,38 @@ export const AuthProvider = ({ children }: any) => {
     }
   }
 
+  async function signUp(usuario: Usuario): Promise<string> {
+    try {
+      if (usuario.email && usuario.senha){
+        const userCredencial = await createUserWithEmailAndPassword(
+          auth,
+          usuario.email,
+          usuario.senha
+        );
+        if(userCredencial){
+          await sendEmailVerification(userCredencial.user);
+        }
+        const usuarioFirestore = {
+          email: usuario.email,
+          nome: usuario.nome,
+          urlFoto: usuario.urlFoto,
+          telefone: usuario.telefone,
+          cpf: usuario.cpf,
+          cnpj: usuario.cnpj,
+        };
+        await setDoc(
+          doc(firestore, "usuarios", userCredencial.user.uid),
+          usuarioFirestore
+        );
+      } else {
+        return "Email e senha são obrigatórios para cadastro.";
+      }
+      return "OK";
+    } catch (error: any) {
+      console.error(error.code, error.message);
+      return launchServerMessageErro(error);
+    }
+  }
   async function signIn(credencial: Credencial): Promise<string> {
     try {
       const userCredencial = await signInWithEmailAndPassword(
@@ -37,10 +69,24 @@ export const AuthProvider = ({ children }: any) => {
         credencial.email,
         credencial.senha,
       );
-      setUserFirebase(userCredencial.user);
+      if (!userCredencial.user.emailVerified) {
+				return "Você precisa verificar seu email para continuar.";
+			}
       armazenaCredencialnaCache(credencial);
       return "OK";
-    } catch (error) {
+    } catch (error: any) {
+      console.error(error.code, error.message);
+      return launchServerMessageErro(error);
+    }
+  }
+
+  async function sair(): Promise<string> {
+    try {
+      await SecureStore.deleteItemAsync("credencial");
+      await signOut(auth);
+      return "OK";
+    } catch (error: any) {
+      console.error(error.code, error.message);
       return launchServerMessageErro(error);
     }
   }
@@ -65,6 +111,6 @@ export const AuthProvider = ({ children }: any) => {
   }
 
   return (
-    <AuthContext.Provider value={{ signIn, recuperaCredencialdaCache }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ signIn, sair, signUp, recuperaCredencialdaCache }}>{children}</AuthContext.Provider>
   );
 };
