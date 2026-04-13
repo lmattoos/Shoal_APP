@@ -6,7 +6,7 @@ import { router } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Text, TextInput, useTheme } from "react-native-paper";
+import { Button, Dialog, Text, TextInput, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as yup from "yup";
 
@@ -173,6 +173,7 @@ export default function Perfil({ navigation }: any) {
               <TextInput
                 style={styles.textinput}
                 label="E-mail"
+                disabled
                 placeholder="Digite seu e-mail"
                 mode="outlined"
                 autoCapitalize="none"
@@ -257,6 +258,24 @@ export default function Perfil({ navigation }: any) {
               {errors.cnpj?.message?.toString()}
             </Text>
           )}
+          <Button
+						style={styles.button}
+						mode="contained"
+						onPress={handleSubmit(atualizarPerfil)}
+						loading={requisitando}
+						disabled={requisitando}
+					>
+						{!atualizando ? "Atualizar" : "Atualizando"}
+					</Button>
+					<Button
+						style={styles.buttonOthers}
+						mode="outlined"
+						onPress={handleSubmit(avisarDaExclusaoPermanenteDaConta)}
+						loading={requisitando}
+						disabled={requisitando}
+					>
+						{!excluindo ? "Excluir" : "Excluindo"}
+					</Button>
         </>
       </ScrollView>
       <Dialog

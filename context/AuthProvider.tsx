@@ -1,14 +1,16 @@
 import { auth, firestore } from "@/firebase/firebaseinit";
 import { Credencial } from "@/model/types";
 import { Usuario } from "@/model/Usuario";
-import { createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, signOut } from "@firebase/auth";
+import { createUserWithEmailAndPassword, deleteUser, sendEmailVerification, signInWithEmailAndPassword, signOut, UserCredential } from "@firebase/auth";
 import * as SecureStore from "expo-secure-store";
 import { doc, setDoc } from "firebase/firestore";
-import { createContext } from "react";
+import { createContext, useState } from "react";
 
 export const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }: any) => {
+  const [userAuth, setUserAuth] = useState<UserCredential | null>(null);
+
   async function armazenaCredencialnaCache(credencial: Credencial): Promise<void> {
     try {
       await SecureStore.setItemAsync("credencial", JSON.stringify(credencial));
@@ -72,6 +74,7 @@ export const AuthProvider = ({ children }: any) => {
       if (!userCredencial.user.emailVerified) {
 				return "Você precisa verificar seu email para continuar.";
 			}
+      setUserAuth(userCredencial);
       armazenaCredencialnaCache(credencial);
       return "OK";
     } catch (error: any) {
@@ -90,6 +93,12 @@ export const AuthProvider = ({ children }: any) => {
       return launchServerMessageErro(error);
     }
   }
+
+  async function delAccount(): Promise<void> {
+		if (userAuth?.user) {
+			await deleteUser(userAuth.user);
+		}
+	}
 
   function launchServerMessageErro(e: any): string {
     switch (e.code) {
@@ -111,6 +120,6 @@ export const AuthProvider = ({ children }: any) => {
   }
 
   return (
-    <AuthContext.Provider value={{ signIn, sair, signUp, recuperaCredencialdaCache }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ signIn, sair, signUp, recuperaCredencialdaCache, delAccount, userAuth }}>{children}</AuthContext.Provider>
   );
 };
