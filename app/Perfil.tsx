@@ -1,4 +1,4 @@
-import { UserContext } from "@/context/UserProvider";
+import { UserContext, UserProvider } from "@/context/UserProvider";
 import { Usuario } from "@/model/Usuario";
 import { masks } from "@/utils/masks";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -73,7 +73,7 @@ export default function Perfil({ navigation }: any) {
 
     if (msg === "OK") {
       setMensagem({
-        tipo: "ok",
+        tipo: "OK",
         mensagem: "Seu perfil foi atualizado com sucesso.",
       });
       setDialogErroVisivel(true);
@@ -124,7 +124,7 @@ export default function Perfil({ navigation }: any) {
               icon="image"
               onPress={() =>
                 alert(
-                  "Isso será desenvolvido na branch modulo2_upload_imagen))",
+                  "Em desenvolvimento",
                 )
               }
             >
@@ -136,7 +136,7 @@ export default function Perfil({ navigation }: any) {
               icon="camera"
               onPress={() =>
                 alert(
-                  "Isso será desenvolvido na branch modulo2_upload_imagen))",
+                  "Em desenvolvimento",
                 )
               }
             >
@@ -304,21 +304,21 @@ export default function Perfil({ navigation }: any) {
         visible={dialogErroVisivel}
         onDismiss={() => {
           setDialogErroVisivel(false);
-          if (mensagem.tipo === "ok") {
+          if (mensagem.tipo === "OK") {
             router.back();
           }
         }}
       >
         <Dialog.Icon
           icon={
-            mensagem.tipo === "ok"
+            mensagem.tipo === "OK"
               ? "checkbox-marked-circle-outline"
               : "alert-circle-outline"
           }
           size={60}
         />
         <Dialog.Title style={styles.textDialog}>
-          {mensagem.tipo === "ok" ? "Informação" : "Erro"}
+          {mensagem.tipo === "OK" ? "Informação" : "Erro"}
         </Dialog.Title>
         <Dialog.Content>
           <Text style={styles.textDialog} variant="bodyLarge">

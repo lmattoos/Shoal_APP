@@ -8,7 +8,7 @@ export const UserContext = createContext({});
 
 export const UserProvider = ({ children }: any) => {
 	const { userAuth, delAccount } = useContext(AuthContext);
-	const [usuerFirebase, setUserFirebase] = useState<Usuario | null>(null);
+	const [userFirebase, setUserFirebase] = useState<Usuario | null>(null);
 
 	useEffect(() => {
 		if (userAuth) {
@@ -72,7 +72,7 @@ export const UserProvider = ({ children }: any) => {
 	}
 
 	return (
-		<UserContext.Provider value={{ usuerFirebase, update, del }}>
+		<UserContext.Provider value={{ userFirebase, update, del }}>
 			{children}
 		</UserContext.Provider>
 	);

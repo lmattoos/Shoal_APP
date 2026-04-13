@@ -25,7 +25,7 @@ export default function Menu() {
 				left={()=> (
 					<List.Icon color={theme.colors.primary} icon="smart-card-outline"/>
 				)}
-				onPress={() => alert("Funcionalidade de perfil ainda não implementada")}
+				onPress={() => router.push('/Perfil')}
 			/>
 			<Divider/>
 			<List.Item
