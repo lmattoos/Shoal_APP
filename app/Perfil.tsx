@@ -1,4 +1,4 @@
-import { UserContext, UserProvider } from "@/context/UserProvider";
+import { UserContext } from "@/context/UserProvider";
 import { Usuario } from "@/model/Usuario";
 import { masks } from "@/utils/masks";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -12,7 +12,8 @@ import * as yup from "yup";
 
 const requiredMessage = "Campo obrigatório";
 
-const schema = yup.object
+const schema = yup
+  .object()
   .shape({
     nome: yup.string().required(requiredMessage),
     email: yup
@@ -114,19 +115,15 @@ export default function Perfil({ navigation }: any) {
         <>
           <Image
             style={styles.image}
-            source={require("../assets/images/person.png")}
-            loadingIndicatorSource={require("../assets/images/person.png")}
+            source={require("../assets/images/shoal/icon-user.png")}
+            loadingIndicatorSource={require("../assets/images/shoal/icon-user.png")}
           />
           <View style={styles.divButtonsImage}>
             <Button
               style={styles.buttonImage}
               mode="outlined"
               icon="image"
-              onPress={() =>
-                alert(
-                  "Em desenvolvimento",
-                )
-              }
+              onPress={() => alert("Em desenvolvimento")}
             >
               Galeria
             </Button>
@@ -134,11 +131,7 @@ export default function Perfil({ navigation }: any) {
               style={styles.buttonImage}
               mode="outlined"
               icon="camera"
-              onPress={() =>
-                alert(
-                  "Em desenvolvimento",
-                )
-              }
+              onPress={() => alert("Em desenvolvimento")}
             >
               Foto
             </Button>
@@ -259,23 +252,23 @@ export default function Perfil({ navigation }: any) {
             </Text>
           )}
           <Button
-						style={styles.button}
-						mode="contained"
-						onPress={handleSubmit(atualizarPerfil)}
-						loading={requisitando}
-						disabled={requisitando}
-					>
-						{!atualizando ? "Atualizar" : "Atualizando"}
-					</Button>
-					<Button
-						style={styles.buttonOthers}
-						mode="outlined"
-						onPress={handleSubmit(avisarDaExclusaoPermanenteDaConta)}
-						loading={requisitando}
-						disabled={requisitando}
-					>
-						{!excluindo ? "Excluir" : "Excluindo"}
-					</Button>
+            style={styles.button}
+            mode="contained"
+            onPress={handleSubmit(atualizarPerfil)}
+            loading={requisitando}
+            disabled={requisitando}
+          >
+            {!atualizando ? "Atualizar" : "Atualizando"}
+          </Button>
+          <Button
+            style={styles.buttonOthers}
+            mode="outlined"
+            onPress={handleSubmit(avisarDaExclusaoPermanenteDaConta)}
+            loading={requisitando}
+            disabled={requisitando}
+          >
+            {!excluindo ? "Excluir" : "Excluindo"}
+          </Button>
         </>
       </ScrollView>
       <Dialog

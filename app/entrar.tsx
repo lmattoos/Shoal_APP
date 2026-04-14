@@ -156,7 +156,7 @@ export default function Entrar() {
             <Text
               style={{ ...styles.textCadastro, color: theme.colors.tertiary }}
               variant="labelMedium"
-              onPress={() => router.push("/cadastrar")}
+              onPress={() => router.push("/signUp")}
             >
               {" "}
               Cadastre-se.

@@ -1,9 +1,9 @@
 import { AuthContext } from "@/context/AuthProvider";
 import { router } from "expo-router";
 import { useContext, useState } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Divider, List, useTheme } from "react-native-paper";
-import { View } from "react-native-reanimated/lib/typescript/Animated";
+
 
 export default function Menu() {
 	const theme = useTheme();
