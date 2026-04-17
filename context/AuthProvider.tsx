@@ -42,14 +42,6 @@ export const AuthProvider = ({ children }: any) => {
   }
 
   async function signUp(usuario: Usuario): Promise<string> {
-    console.log("------- INICIANDO SIGNUP -------");
-    console.log("E-mail recebido:", usuario.email);
-    console.log(
-      "Senha recebida:",
-      usuario.senha ? "******** (Preenchida)" : "VAZIA",
-    );
-    console.log("Nome:", usuario.nome);
-    console.log("--------------------------------");
     try {
       if (usuario.email && usuario.senha) {
         const userCredencial = await createUserWithEmailAndPassword(
