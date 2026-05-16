@@ -1,4 +1,4 @@
-export class Peixaria {
+export class Pescado {
   public uid: string;
   public nome: string;
   public urlFoto: string;

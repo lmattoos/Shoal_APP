@@ -51,6 +51,7 @@ export const AuthProvider = ({ children }: any) => {
           usuario.email,
           usuario.senha,
         );
+
         if (userCredencial) {
           if (urlDevice !== "") {
             const urlStorage = await sendImageToStorage(
@@ -58,24 +59,29 @@ export const AuthProvider = ({ children }: any) => {
               userCredencial.user.uid,
             );
             if (!urlStorage) {
-              return "Erro ao cadastrar o usuário. Contate o suporte."; //não deixa salvar ou atualizar se não realizar todos os passos para enviar a imagem para o storage
+              return "Erro ao cadastrar o usuário. Contate o suporte.";
             }
             usuario.urlFoto = urlStorage;
           }
           await sendEmailVerification(userCredencial.user);
+
+          const usuarioFirestore = {
+            email: usuario.email,
+            nome: usuario.nome,
+            urlFoto: usuario.urlFoto || "",
+            telefone: usuario.telefone,
+            cpf: usuario.cpf,
+            cnpj: usuario.cnpj,
+          };
+
+          await setDoc(
+            doc(firestore, "usuarios", userCredencial.user.uid),
+            usuarioFirestore,
+            { merge: true },
+          );
+        } else {
+          return "Erro ao criar credenciais do usuário.";
         }
-        const usuarioFirestore = {
-          email: usuario.email,
-          nome: usuario.nome,
-          urlFoto: usuario.urlFoto,
-          telefone: usuario.telefone,
-          cpf: usuario.cpf,
-          cnpj: usuario.cnpj,
-        };
-        await setDoc(
-          doc(firestore, "usuarios", userCredencial.user.uid),
-          usuarioFirestore,
-        );
       } else {
         return "Email e senha são obrigatórios para cadastro.";
       }
@@ -85,6 +91,7 @@ export const AuthProvider = ({ children }: any) => {
       return launchServerMessageErro(error);
     }
   }
+
   async function signIn(credencial: Credencial): Promise<string> {
     try {
       const userCredencial = await signInWithEmailAndPassword(

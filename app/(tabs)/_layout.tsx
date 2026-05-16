@@ -1,4 +1,5 @@
 import { AuthContext } from "@/context/AuthProvider";
+import { PeixariaContext } from "@/context/PeixariaProvider";
 import { Tabs } from "expo-router";
 import { useContext } from "react";
 import { Platform } from "react-native";
@@ -7,6 +8,9 @@ import { Icon, useTheme } from "react-native-paper";
 export default function TabLayout() {
   const theme = useTheme();
   const { userAuth } = useContext<any>(AuthContext);
+  const { peixariaUser } = useContext<any>(PeixariaContext);
+
+  const possuiPeixaria = userAuth && peixariaUser !== null;
 
   return (
     <Tabs
@@ -40,7 +44,7 @@ export default function TabLayout() {
           options={{
             title: "Minha Peixaria",
             tabBarIcon: ({ color }) => (
-              <Icon source="anchor" color={theme.colors.primary} size={20} />
+              <Icon source="store-cog" color={theme.colors.primary} size={20} />
             ),
           }}
         />
