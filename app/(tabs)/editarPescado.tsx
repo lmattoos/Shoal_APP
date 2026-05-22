@@ -1,67 +1,70 @@
-import { AuthContext } from "@/context/AuthProvider";
-import { PeixariaContext } from "@/context/PeixariaProvider";
-import { Peixaria } from "@/model/Peixaria";
-import { masks } from "@/utils/masks";
+import { PescadoContext } from "@/context/PescadoProvider";
+import { Pescado } from "@/model/Pescado";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
-import { useContext, useEffect, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useContext, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Image, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Dialog, Text, TextInput, useTheme } from "react-native-paper";
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import {
+  Button,
+  Dialog,
+  Menu,
+  Text,
+  TextInput,
+  useTheme,
+} from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as yup from "yup";
 
 const requiredMessage = "Campo obrigatório";
 
+const CATEGORIAS = [
+  "Filés",
+  "Peixes Inteiros",
+  "Porções e Postas",
+  "Camarão",
+  "Frutos do Mar",
+  "Congelados",
+];
+
 const schema = yup.object().shape({
   nome: yup.string().required(requiredMessage),
-  email: yup
-    .string()
-    .required(requiredMessage)
-    .matches(/\S+@\S+\.\S+/, "Email inválido"),
-  telefone: yup
-    .string()
-    .required(requiredMessage)
-    .matches(/^\(\d{2}\) \d{5}\-\d{4}$/, "Telefone inválido"),
-  cpf: yup
-    .string()
-    .required(requiredMessage)
-    .matches(/^\d{3}\.\d{3}\.\d{3}\-\d{2}$/, "CPF inválido"),
-  cnpj: yup
-    .string()
-    .required(requiredMessage)
-    .matches(/^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$/, "CNPJ inválido"),
+  peso_unidade: yup.string().required(requiredMessage),
+  valor_unidade: yup.string().required(requiredMessage),
+  estoque: yup.string().required(requiredMessage),
+  categoria: yup.string().required(requiredMessage),
   descricao: yup
     .string()
     .max(150, "A descrição deve ter no máximo 150 caracteres"),
 });
 
-export default function PeixariaUser() {
+export default function EditarPescado() {
   const theme = useTheme();
-  const { userAuth } = useContext<any>(AuthContext);
-  const { peixariaUser, updatePeixaria, delPeixaria } =
-    useContext<any>(PeixariaContext);
-  const [authDialogVisivel, setAuthDialogVisivel] = useState(false);
-
-  useEffect(() => {
-    if (!userAuth) {
-      setAuthDialogVisivel(true);
-    }
-  }, [userAuth]);
+  const { pescado } = useLocalSearchParams();
+  const pescadoParam = JSON.parse(pescado.toString());
+  const { updatePescado, delPescado } = useContext<any>(PescadoContext);
 
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<any>({
     defaultValues: {
-      nome: peixariaUser?.nome,
-      email: peixariaUser?.email,
-      telefone: peixariaUser?.telefone,
-      cpf: peixariaUser?.cpf,
-      cnpj: peixariaUser?.cnpj,
-      descricao: peixariaUser?.descricao,
+      nome: pescadoParam?.nome,
+      peso_unidade: pescadoParam?.peso_unidade,
+      valor_unidade: pescadoParam?.valor_unidade,
+      estoque: pescadoParam?.estoque,
+      categoria: pescadoParam?.categoria,
+      descricao: pescadoParam?.descricao || "",
     },
     mode: "onSubmit",
     resolver: yupResolver(schema),
@@ -72,30 +75,23 @@ export default function PeixariaUser() {
   const [excluindo, setExcluindo] = useState(false);
   const [dialogErroVisivel, setDialogErroVisivel] = useState(false);
   const [dialogExcluirVisivel, setDialogExcluirVisivel] = useState(false);
+  const [menuVisivel, setMenuVisivel] = useState(false);
   const [mensagem, setMensagem] = useState({ tipo: "", mensagem: "" });
   const [urlDevice, setUrlDevice] = useState("");
 
-  async function updPeixaria(formData: any) {
+  async function updPescado(data: Pescado) {
     setRequisitando(true);
     setAtualizando(true);
-    const peixariaAtualizada: Peixaria = {
-      uid: peixariaUser.uid,
-      ownerId: peixariaUser.ownerId,
-      urlFoto: peixariaUser.urlFoto,
-      nome: formData.nome,
-      email: formData.email,
-      telefone: formData.telefone,
-      cpf: formData.cpf,
-      cnpj: formData.cnpj,
-      descricao: formData.descricao,
-    };
 
-    const msg = await updatePeixaria(peixariaAtualizada, urlDevice);
+    data.uid = pescadoParam?.uid;
+    data.urlFoto = urlDevice !== "" ? urlDevice : pescadoParam?.urlFoto;
+
+    const msg = await updatePescado(data, urlDevice);
 
     if (msg === "OK") {
       setMensagem({
         tipo: "OK",
-        mensagem: "Sua peixaria foi atualizada com sucesso.",
+        mensagem: "Pescado atualizado com sucesso.",
       });
       setUrlDevice("");
       setDialogErroVisivel(true);
@@ -107,20 +103,22 @@ export default function PeixariaUser() {
     setAtualizando(false);
   }
 
-  function avisarDaExclusaoPermanenteDaPeixaria() {
+  function avisarDaExclusaoPermanenteDoPescado() {
     setDialogExcluirVisivel(true);
   }
 
-  async function excluirPeixaria() {
+  async function excluirPescado() {
     setDialogExcluirVisivel(false);
     setRequisitando(true);
     setExcluindo(true);
 
-    const msg = await delPeixaria(peixariaUser.uid, peixariaUser.ownerId);
-
+    const msg = await delPescado(pescadoParam?.uid);
     if (msg === "OK") {
-      setRequisitando(false);
-      setExcluindo(false);
+      setMensagem({
+        tipo: "OK",
+        mensagem: "Pescadi excluído",
+      });
+      setDialogErroVisivel(true);
     } else {
       setMensagem({ tipo: "erro", mensagem: msg });
       setDialogErroVisivel(true);
@@ -154,10 +152,14 @@ export default function PeixariaUser() {
   }
 
   return (
-    <SafeAreaView
-      style={{ ...styles.container, backgroundColor: theme.colors.background }}
-    >
-      {userAuth && peixariaUser ? (
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{
+          ...styles.container,
+          backgroundColor: theme.colors.background,
+        }}
+      >
         <ScrollView
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
@@ -168,7 +170,9 @@ export default function PeixariaUser() {
               source={
                 urlDevice !== ""
                   ? { uri: urlDevice }
-                  : { uri: peixariaUser?.urlFoto }
+                  : pescadoParam?.urlFoto && pescadoParam?.urlFoto !== ""
+                    ? { uri: pescadoParam.urlFoto }
+                    : require("../assets/images/shoal/Shoal(Anchor-Logo).png")
               }
             />
             <View style={styles.divButtonsImage}>
@@ -189,6 +193,7 @@ export default function PeixariaUser() {
                 Foto
               </Button>
             </View>
+
             <Controller
               control={control}
               name="nome"
@@ -202,7 +207,7 @@ export default function PeixariaUser() {
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
-                  right={<TextInput.Icon icon="smart-card" />}
+                  right={<TextInput.Icon icon="fish" />}
                 />
               )}
             />
@@ -211,93 +216,117 @@ export default function PeixariaUser() {
                 {errors.nome?.message?.toString()}
               </Text>
             )}
+
             <Controller
               control={control}
-              name="email"
+              name="peso_unidade"
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   style={styles.textinput}
-                  label="E-mail"
+                  label="Peso por unidade(g)"
                   mode="outlined"
-                  autoCapitalize="none"
+                  keyboardType="numeric"
                   returnKeyType="next"
-                  keyboardType="email-address"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
-                  right={<TextInput.Icon icon="email" />}
+                  right={<TextInput.Icon icon="weight-gram" />}
                 />
               )}
             />
-            {errors.email && (
+            {errors.peso_unidade && (
               <Text style={{ ...styles.textError, color: theme.colors.error }}>
-                {errors.email?.message?.toString()}
+                {errors.peso_unidade?.message?.toString()}
               </Text>
             )}
+
             <Controller
               control={control}
-              name="telefone"
+              name="valor_unidade"
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
                   style={styles.textinput}
-                  label="Telefone"
-                  mode="outlined"
-                  keyboardType="phone-pad"
-                  onBlur={onBlur}
-                  onChangeText={(text) => onChange(masks.telefone(text))}
-                  value={value}
-                  right={<TextInput.Icon icon="phone" />}
-                />
-              )}
-            />
-            {errors.telefone && (
-              <Text style={{ ...styles.textError, color: theme.colors.error }}>
-                {errors.telefone?.message?.toString()}
-              </Text>
-            )}
-            <Controller
-              control={control}
-              name="cpf"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  style={styles.textinput}
-                  label="CPF"
-                  mode="outlined"
-                  keyboardType="numeric"
-                  onBlur={onBlur}
-                  onChangeText={(text) => onChange(masks.cpf(text))}
-                  value={value}
-                  right={<TextInput.Icon icon="account-details" />}
-                />
-              )}
-            />
-            {errors.cpf && (
-              <Text style={{ ...styles.textError, color: theme.colors.error }}>
-                {errors.cpf?.message?.toString()}
-              </Text>
-            )}
-            <Controller
-              control={control}
-              name="cnpj"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  style={styles.textinput}
-                  label="CNPJ"
+                  label="Preço"
                   mode="outlined"
                   keyboardType="numeric"
                   returnKeyType="next"
                   onBlur={onBlur}
-                  onChangeText={(text) => onChange(masks.cnpj(text))}
+                  onChangeText={onChange}
                   value={value}
-                  right={<TextInput.Icon icon="office-building" />}
+                  right={<TextInput.Icon icon="currency-usd" />}
                 />
               )}
             />
-            {errors.cnpj && (
+            {errors.valor_unidade && (
               <Text style={{ ...styles.textError, color: theme.colors.error }}>
-                {errors.cnpj?.message?.toString()}
+                {errors.valor_unidade?.message?.toString()}
               </Text>
             )}
+
+            <Controller
+              control={control}
+              name="estoque"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.textinput}
+                  label="Em Estoque"
+                  mode="outlined"
+                  keyboardType="numeric"
+                  returnKeyType="next"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  right={<TextInput.Icon icon="warehouse" />}
+                />
+              )}
+            />
+            {errors.estoque && (
+              <Text style={{ ...styles.textError, color: theme.colors.error }}>
+                {errors.estoque?.message?.toString()}
+              </Text>
+            )}
+            <Controller
+              control={control}
+              name="categoria"
+              render={({ field: { value } }) => (
+                <Menu
+                  visible={menuVisivel}
+                  onDismiss={() => setMenuVisivel(false)}
+                  anchor={
+                    <TextInput
+                      style={styles.textinput}
+                      label="Categoria"
+                      mode="outlined"
+                      value={value}
+                      editable={false}
+                      right={
+                        <TextInput.Icon
+                          icon="menu-down"
+                          onPress={() => setMenuVisivel(true)}
+                        />
+                      }
+                    />
+                  }
+                >
+                  {CATEGORIAS.map((cat, index) => (
+                    <Menu.Item
+                      key={index}
+                      onPress={() => {
+                        setValue("categoria", cat, { shouldValidate: true });
+                        setMenuVisivel(false);
+                      }}
+                      title={cat}
+                    />
+                  ))}
+                </Menu>
+              )}
+            />
+            {errors.categoria && (
+              <Text style={{ ...styles.textError, color: theme.colors.error }}>
+                {errors.categoria?.message?.toString()}
+              </Text>
+            )}
+
             <Controller
               control={control}
               name="descricao"
@@ -308,7 +337,6 @@ export default function PeixariaUser() {
                   mode="outlined"
                   multiline
                   maxLength={150}
-                  returnKeyType="next"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
@@ -324,7 +352,7 @@ export default function PeixariaUser() {
             <Button
               style={styles.button}
               mode="contained"
-              onPress={handleSubmit(updPeixaria)}
+              onPress={handleSubmit(updPescado)}
               loading={requisitando && atualizando}
               disabled={requisitando}
             >
@@ -333,61 +361,64 @@ export default function PeixariaUser() {
             <Button
               style={styles.buttonOthers}
               mode="outlined"
-              onPress={avisarDaExclusaoPermanenteDaPeixaria}
+              onPress={avisarDaExclusaoPermanenteDoPescado}
               loading={requisitando && excluindo}
               disabled={requisitando}
             >
-              {!excluindo ? "Excluir Peixaria" : "Excluindo"}
+              {!excluindo ? "Excluir Pescado" : "Excluindo"}
             </Button>
           </>
         </ScrollView>
-      ) : (
-        <></>
-      )}
-      <Dialog
-        visible={dialogExcluirVisivel}
-        onDismiss={() => setDialogExcluirVisivel(false)}
-      >
-        <Dialog.Icon icon="alert-circle-outline" size={60} />
-        <Dialog.Title style={styles.textDialog}>Atenção</Dialog.Title>
-        <Dialog.Content>
-          <Text style={styles.textDialog} variant="bodyLarge">
-            {
-              "Você tem certeza que deseja excluir sua peixaria?\nEsta operação será irreversível."
+        <Dialog
+          visible={dialogExcluirVisivel}
+          onDismiss={() => setDialogExcluirVisivel(false)}
+        >
+          <Dialog.Icon icon="alert-circle-outline" size={60} />
+          <Dialog.Title style={styles.textDialog}>Atenção</Dialog.Title>
+          <Dialog.Content>
+            <Text style={styles.textDialog} variant="bodyLarge">
+              {
+                "Você tem certeza que deseja excluir esse registro?\nEsta operação será irreversível."
+              }
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={excluirPescado}>Excluir</Button>
+            <Button onPress={() => setDialogExcluirVisivel(false)}>
+              Cancelar
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+        <Dialog
+          visible={dialogErroVisivel}
+          onDismiss={() => {
+            setDialogErroVisivel(false);
+            if (mensagem.tipo === "OK") {
+              router.back();
             }
-          </Text>
-        </Dialog.Content>
-        <Dialog.Actions>
-          <Button onPress={excluirPeixaria}>Excluir</Button>
-          <Button onPress={() => setDialogExcluirVisivel(false)}>
-            Cancelar
-          </Button>
-        </Dialog.Actions>
-      </Dialog>
-      <Dialog
-        visible={dialogErroVisivel}
-        onDismiss={() => setDialogErroVisivel(false)}
-      >
-        <Dialog.Icon
-          icon={
-            mensagem.tipo === "OK"
-              ? "checkbox-marked-circle-outline"
-              : "alert-circle-outline"
-          }
-          size={60}
-        />
-        <Dialog.Title style={styles.textDialog}>
-          {mensagem.tipo === "OK" ? "Informação" : "Erro"}
-        </Dialog.Title>
-        <Dialog.Content>
-          <Text style={styles.textDialog} variant="bodyLarge">
-            {mensagem.mensagem}
-          </Text>
-        </Dialog.Content>
-        <Dialog.Actions>
-          <Button onPress={() => setDialogErroVisivel(false)}>Fechar</Button>
-        </Dialog.Actions>
-      </Dialog>
+          }}
+        >
+          <Dialog.Icon
+            icon={
+              mensagem.tipo === "OK"
+                ? "checkbox-marked-circle-outline"
+                : "alert-circle-outline"
+            }
+            size={60}
+          />
+          <Dialog.Title style={styles.textDialog}>
+            {mensagem.tipo === "OK" ? "Informação" : "Erro"}
+          </Dialog.Title>
+          <Dialog.Content>
+            <Text style={styles.textDialog} variant="bodyLarge">
+              {mensagem.mensagem}
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setDialogErroVisivel(false)}>Fechar</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -402,32 +433,37 @@ const styles = StyleSheet.create({
     height: 200,
     alignSelf: "center",
     borderRadius: 200 / 2,
-    marginTop: 50,
+    marginTop: 30,
   },
   textinput: {
     width: 350,
-    height: 50,
-    marginTop: 20,
+    marginTop: 15,
     backgroundColor: "transparent",
   },
   textError: {
     width: 350,
+    marginTop: 5,
   },
   button: {
     marginTop: 40,
+    width: 350,
+    alignSelf: "center",
   },
   buttonOthers: {
     marginTop: 20,
     marginBottom: 30,
+    width: 350,
+    alignSelf: "center",
   },
   divButtonsImage: {
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 15,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   buttonImage: {
-    width: 180,
+    width: 170,
+    marginHorizontal: 5,
   },
   textDialog: {
     textAlign: "center",
