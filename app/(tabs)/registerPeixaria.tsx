@@ -353,7 +353,7 @@ export default function RegPeixaria() {
         <Dialog.Content>
           <Text style={styles.textDialog} variant="bodyLarge">
             {
-              "Para poder cadastrar uma peixaria no Shoal, você precisa possuir uma conta activa no sistema."
+              "Para poder cadastrar uma peixaria no Shoal, você precisa possuir uma conta ativa no sistema."
             }
           </Text>
         </Dialog.Content>

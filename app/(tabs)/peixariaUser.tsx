@@ -358,10 +358,10 @@ export default function PeixariaUser() {
           </Text>
         </Dialog.Content>
         <Dialog.Actions>
+          <Button onPress={excluirPeixaria}>Excluir</Button>
           <Button onPress={() => setDialogExcluirVisivel(false)}>
             Cancelar
           </Button>
-          <Button onPress={excluirPeixaria}>Excluir</Button>
         </Dialog.Actions>
       </Dialog>
       <Dialog

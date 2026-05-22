@@ -39,15 +39,30 @@ export default function TabLayout() {
         }}
       />
       {possuiPeixaria ? (
-        <Tabs.Screen
-          name="peixariaUser"
-          options={{
-            title: "Minha Peixaria",
-            tabBarIcon: ({ color }) => (
-              <Icon source="store-cog" color={theme.colors.primary} size={20} />
-            ),
-          }}
-        />
+        <>
+          <Tabs.Screen
+            name="peixariaUser"
+            options={{
+              title: "Minha Peixaria",
+              tabBarIcon: ({ color }) => (
+                <Icon
+                  source="store-cog"
+                  color={theme.colors.primary}
+                  size={20}
+                />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="gerenciarPescados"
+            options={{
+              title: "Gerenciar Catálogo",
+              tabBarIcon: ({ color }) => (
+                <Icon source="fish" color={theme.colors.primary} size={20} />
+              ),
+            }}
+          />
+        </>
       ) : (
         <Tabs.Screen
           name="registerPeixaria"

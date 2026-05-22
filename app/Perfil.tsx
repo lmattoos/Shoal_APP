@@ -76,7 +76,7 @@ export default function Perfil({ navigation }: any) {
     if (msg === "OK") {
       setMensagem({
         tipo: "OK",
-        mensagem: "Seu perfil foi updated com sucesso.",
+        mensagem: "Seu perfil foi atualizada com sucesso.",
       });
       setUrlDevice("");
       setDialogErroVisivel(true);
