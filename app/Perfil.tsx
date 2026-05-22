@@ -2,6 +2,7 @@ import { UserContext } from "@/context/UserProvider";
 import { Usuario } from "@/model/Usuario";
 import { masks } from "@/utils/masks";
 import { yupResolver } from "@hookform/resolvers/yup";
+import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -37,18 +38,19 @@ const schema = yup
 
 export default function Perfil({ navigation }: any) {
   const theme = useTheme();
-  const { userFirebase } = useContext<Usuario>(UserContext);
+  const { userFirebase, update, del } = useContext<any>(UserContext);
+  
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm<any>({
     defaultValues: {
-      nome: userFirebase.nome,
-      email: userFirebase.email,
-      telefone: userFirebase.telefone,
-      cpf: userFirebase.cpf,
-      cnpj: userFirebase.cnpj,
+      nome: userFirebase?.nome,
+      email: userFirebase?.email,
+      telefone: userFirebase?.telefone,
+      cpf: userFirebase?.cpf,
+      cnpj: userFirebase?.cnpj,
     },
     mode: "onSubmit",
     resolver: yupResolver(schema),
@@ -60,16 +62,15 @@ export default function Perfil({ navigation }: any) {
   const [dialogErroVisivel, setDialogErroVisivel] = useState(false);
   const [dialogExcluirVisivel, setDialogExcluirVisivel] = useState(false);
   const [mensagem, setMensagem] = useState({ tipo: "", mensagem: "" });
-  const { update, del } = useContext(UserContext);
-
-  useEffect(() => {}, []);
+  const [urlDevice, setUrlDevice] = useState("");
 
   async function atualizarPerfil(data: Usuario) {
     setRequisitando(true);
     setAtualizando(true);
+    
     data.uid = userFirebase.uid;
-    data.urlFoto =
-      "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50";
+    data.urlFoto = urlDevice !== "" ? urlDevice : (userFirebase?.urlFoto || "");
+
     const msg = await update(data);
 
     if (msg === "OK") {
@@ -77,15 +78,14 @@ export default function Perfil({ navigation }: any) {
         tipo: "OK",
         mensagem: "Seu perfil foi atualizado com sucesso.",
       });
+      setUrlDevice(""); 
       setDialogErroVisivel(true);
-      setRequisitando(false);
-      setAtualizando(false);
     } else {
       setMensagem({ tipo: "erro", mensagem: msg });
       setDialogErroVisivel(true);
-      setRequisitando(false);
-      setAtualizando(false);
     }
+    setRequisitando(false);
+    setAtualizando(false);
   }
 
   function avisarDaExclusaoPermanenteDaConta() {
@@ -98,7 +98,7 @@ export default function Perfil({ navigation }: any) {
     setExcluindo(true);
     const msg = await del(userFirebase.uid);
     if (msg === "OK") {
-      router.replace("/signIn");
+      router.replace("/entrar");
     } else {
       setMensagem({ tipo: "erro", mensagem: msg });
       setDialogErroVisivel(true);
@@ -107,23 +107,55 @@ export default function Perfil({ navigation }: any) {
     }
   }
 
+  async function buscarNaGaleria() {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setUrlDevice(result.assets[0].uri);
+    }
+  }
+
+  async function tirarFoto() {
+    let result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (!result.canceled) {
+      setUrlDevice(result.assets[0].uri);
+    }
+  }
+
   return (
     <SafeAreaView
       style={{ ...styles.container, backgroundColor: theme.colors.background }}
     >
-      <ScrollView>
+      <ScrollView
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+      >
         <>
           <Image
             style={styles.image}
-            source={require("../assets/images/shoal/icon-user.png")}
-            loadingIndicatorSource={require("../assets/images/shoal/icon-user.png")}
+            source={
+              urlDevice !== ""
+                ? { uri: urlDevice }
+                : userFirebase?.urlFoto
+                  ? { uri: userFirebase.urlFoto }
+                  : require("../assets/images/shoal/icon-user.png")
+            }
           />
           <View style={styles.divButtonsImage}>
             <Button
               style={styles.buttonImage}
               mode="outlined"
               icon="image"
-              onPress={() => alert("Em desenvolvimento")}
+              onPress={buscarNaGaleria}
             >
               Galeria
             </Button>
@@ -131,7 +163,7 @@ export default function Perfil({ navigation }: any) {
               style={styles.buttonImage}
               mode="outlined"
               icon="camera"
-              onPress={() => alert("Em desenvolvimento")}
+              onPress={tirarFoto}
             >
               Foto
             </Button>
@@ -143,7 +175,6 @@ export default function Perfil({ navigation }: any) {
               <TextInput
                 style={styles.textinput}
                 label="Nome"
-                placeholder="Digite seu nome"
                 mode="outlined"
                 autoCapitalize="words"
                 returnKeyType="next"
@@ -167,7 +198,6 @@ export default function Perfil({ navigation }: any) {
                 style={styles.textinput}
                 label="E-mail"
                 disabled
-                placeholder="Digite seu e-mail"
                 mode="outlined"
                 autoCapitalize="none"
                 returnKeyType="next"
@@ -191,7 +221,6 @@ export default function Perfil({ navigation }: any) {
               <TextInput
                 style={styles.textinput}
                 label="Telefone"
-                placeholder="(00) 00000-0000"
                 mode="outlined"
                 keyboardType="phone-pad"
                 onBlur={onBlur}
@@ -213,7 +242,6 @@ export default function Perfil({ navigation }: any) {
               <TextInput
                 style={styles.textinput}
                 label="CPF"
-                placeholder="000.000.000-00"
                 mode="outlined"
                 keyboardType="numeric"
                 onBlur={onBlur}
@@ -235,7 +263,6 @@ export default function Perfil({ navigation }: any) {
               <TextInput
                 style={styles.textinput}
                 label="CNPJ"
-                placeholder="00.000.000/0001-00"
                 mode="outlined"
                 keyboardType="numeric"
                 returnKeyType="next"
@@ -255,7 +282,7 @@ export default function Perfil({ navigation }: any) {
             style={styles.button}
             mode="contained"
             onPress={handleSubmit(atualizarPerfil)}
-            loading={requisitando}
+            loading={requisitando && atualizando}
             disabled={requisitando}
           >
             {!atualizando ? "Atualizar" : "Atualizando"}
@@ -263,22 +290,20 @@ export default function Perfil({ navigation }: any) {
           <Button
             style={styles.buttonOthers}
             mode="outlined"
-            onPress={handleSubmit(avisarDaExclusaoPermanenteDaConta)}
-            loading={requisitando}
+            onPress={avisarDaExclusaoPermanenteDaConta}
+            loading={requisitando && excluindo}
             disabled={requisitando}
           >
-            {!excluindo ? "Excluir" : "Excluindo"}
+            {!excluindo ? "Excluir Conta" : "Excluindo"}
           </Button>
         </>
       </ScrollView>
       <Dialog
         visible={dialogExcluirVisivel}
-        onDismiss={() => {
-          setDialogErroVisivel(false);
-        }}
+        onDismiss={() => setDialogExcluirVisivel(false)}
       >
         <Dialog.Icon icon={"alert-circle-outline"} size={60} />
-        <Dialog.Title style={styles.textDialog}>{"Atenção"}</Dialog.Title>
+        <Dialog.Title style={styles.textDialog}>Atenção</Dialog.Title>
         <Dialog.Content>
           <Text style={styles.textDialog} variant="bodyLarge">
             {
@@ -287,10 +312,10 @@ export default function Perfil({ navigation }: any) {
           </Text>
         </Dialog.Content>
         <Dialog.Actions>
+          <Button onPress={excluirConta}>Excluir</Button>
           <Button onPress={() => setDialogExcluirVisivel(false)}>
             Cancelar
           </Button>
-          <Button onPress={excluirConta}>Excluir</Button>
         </Dialog.Actions>
       </Dialog>
       <Dialog
@@ -318,6 +343,9 @@ export default function Perfil({ navigation }: any) {
             {mensagem.mensagem}
           </Text>
         </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={() => setDialogErroVisivel(false)}>Fechar</Button>
+        </Dialog.Actions>
       </Dialog>
     </SafeAreaView>
   );
@@ -341,11 +369,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     backgroundColor: "transparent",
   },
-  textEsqueceuSenha: {
-    alignSelf: "flex-end",
-    marginTop: 20,
-  },
-  textCadastro: {},
   textError: {
     width: 350,
   },

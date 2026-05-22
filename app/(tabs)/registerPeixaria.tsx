@@ -71,10 +71,16 @@ export default function RegPeixaria() {
 
   const [requisitando, setRequisitando] = useState(false);
   const [dialogVisivel, setDialogVisivel] = useState(false);
+  const [dialogImagemVisivel, setDialogImagemVisivel] = useState(false);
   const [mensagem, setMensagem] = useState({ tipo: "", mensagem: "" });
   const [urlDevice, setUrlDevice] = useState("");
 
   async function cadPeixaria(data: Peixaria) {
+    if (urlDevice === "") {
+      setDialogImagemVisivel(true);
+      return;
+    }
+
     setRequisitando(true);
     const msg = await registerPeixaria(userAuth?.user?.uid, data, urlDevice);
     if (msg === "OK") {
@@ -285,7 +291,7 @@ export default function RegPeixaria() {
             )}
             <Button
               style={styles.button}
-              mode="outlined"
+              mode="contained"
               onPress={handleSubmit(cadPeixaria)}
               loading={requisitando}
               disabled={requisitando}
@@ -311,6 +317,30 @@ export default function RegPeixaria() {
         </Dialog.Actions>
       </Dialog>
 
+      <Dialog
+        visible={dialogImagemVisivel}
+        onDismiss={() => setDialogImagemVisivel(false)}
+      >
+        <Dialog.Icon
+          icon="image-off-outline"
+          size={60}
+          color={theme.colors.error}
+        />
+        <Dialog.Title style={styles.textDialog}>Foto Obrigatória</Dialog.Title>
+        <Dialog.Content>
+          <Text style={styles.textDialog} variant="bodyLarge">
+            {
+              "Para poder cadastrar sua peixaria, é necessário enviar uma imagem da logo ou fachada do estabelecimento."
+            }
+          </Text>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={() => setDialogImagemVisivel(false)}>
+            Entendido
+          </Button>
+        </Dialog.Actions>
+      </Dialog>
+
       <Dialog visible={authDialogVisivel} dismissable={false}>
         <Dialog.Icon
           icon="account-lock-outline"
@@ -322,8 +352,9 @@ export default function RegPeixaria() {
         </Dialog.Title>
         <Dialog.Content>
           <Text style={styles.textDialog} variant="bodyLarge">
-            Para poder cadastrar uma peixaria no Shoal, você precisa possuir uma
-            conta activa no sistema.
+            {
+              "Para poder cadastrar uma peixaria no Shoal, você precisa possuir uma conta activa no sistema."
+            }
           </Text>
         </Dialog.Content>
         <Dialog.Actions>

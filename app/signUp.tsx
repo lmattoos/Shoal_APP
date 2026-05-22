@@ -129,7 +129,7 @@ export default function SignUp() {
             source={
               urlDevice !== ""
                 ? { uri: urlDevice }
-                : require("../assets/images/shoal/Shoal(Logo).png")
+                : require("../assets/images/shoal/icon-user.png")
             }
           />
           <View style={styles.divButtonsImage}>

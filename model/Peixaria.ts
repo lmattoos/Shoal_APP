@@ -1,5 +1,5 @@
 export class Peixaria {
-  public uid: string;
+  public uid?: string;
   public nome: string;
   public urlFoto: string;
   public cnpj: string;
@@ -7,8 +7,8 @@ export class Peixaria {
   public email: string;
   public telefone: string;
   public descricao: string;
+  public ownerId: string;
   constructor(
-    uid: string,
     nome: string,
     urlFoto: string,
     cnpj: string,
@@ -16,6 +16,8 @@ export class Peixaria {
     email: string,
     telefone: string,
     descricao: string,
+    ownerId: string,
+    uid?: string,
   ) {
     this.uid = uid;
     this.email = email;
@@ -25,5 +27,6 @@ export class Peixaria {
     this.cpf = cpf;
     this.cnpj = cnpj;
     this.descricao = descricao;
+    this.ownerId = ownerId;
   }
 }

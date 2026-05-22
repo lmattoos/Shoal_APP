@@ -1,7 +1,15 @@
 import { firestore, storage } from "@/firebase/firebaseinit";
 import { Peixaria } from "@/model/Peixaria";
 import * as ImageManipulator from "expo-image-manipulator";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import {
+  doc,
+  collection,
+  query,
+  where,
+  getDocs,
+  setDoc,
+  deleteDoc,
+} from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { createContext, useContext, useEffect, useState } from "react";
 import { AuthContext } from "./AuthProvider";
@@ -25,11 +33,18 @@ export const PeixariaProvider = ({ children }: any) => {
       if (!userAuth?.user) {
         return;
       }
-      const docSnap = await getDoc(
-        doc(firestore, "peixarias", userAuth.user.uid),
+
+      const q = query(
+        collection(firestore, "peixarias"),
+        where("ownerId", "==", userAuth.user.uid),
       );
-      if (docSnap.exists()) {
+
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const docSnap = querySnapshot.docs[0];
         let peixariaData = docSnap.data();
+
         const peixaria: Peixaria = {
           uid: docSnap.id,
           nome: peixariaData.nome,
@@ -39,6 +54,7 @@ export const PeixariaProvider = ({ children }: any) => {
           cnpj: peixariaData.cnpj,
           descricao: peixariaData.descricao,
           urlFoto: peixariaData.urlFoto,
+          ownerId: peixariaData.ownerId,
         };
         setPeixariaUser(peixaria);
       } else {
@@ -50,15 +66,25 @@ export const PeixariaProvider = ({ children }: any) => {
   }
 
   async function registerPeixaria(
-    uid: string,
     peixaria: Peixaria,
     urlDevice: string,
   ): Promise<string> {
     try {
+      if (!userAuth?.user) {
+        return "Usuário não autenticado.";
+      }
+
+      const ownerId = userAuth.user.uid;
+      const novaPeixariaRef = doc(collection(firestore, "peixarias"));
+      const peixariaId = novaPeixariaRef.id;
+
       let urlStorage = "";
 
       if (urlDevice !== "") {
-        const urlColetada = await sendPeixariaImageToStorage(urlDevice, uid);
+        const urlColetada = await sendPeixariaImageToStorage(
+          urlDevice,
+          peixariaId,
+        );
         if (!urlColetada) {
           return "Erro ao fazer upload da imagem da peixaria. Tente novamente.";
         }
@@ -73,14 +99,13 @@ export const PeixariaProvider = ({ children }: any) => {
         cnpj: peixaria.cnpj,
         descricao: peixaria.descricao || "",
         urlFoto: urlStorage,
+        ownerId: ownerId,
       };
 
-      await setDoc(doc(firestore, "peixarias", uid), peixariaFirestore, {
-        merge: true,
-      });
+      await setDoc(novaPeixariaRef, peixariaFirestore);
 
       await setDoc(
-        doc(firestore, "usuarios", uid),
+        doc(firestore, "usuarios", ownerId),
         { temPeixaria: true },
         { merge: true },
       );
@@ -93,7 +118,6 @@ export const PeixariaProvider = ({ children }: any) => {
   }
 
   async function updatePeixaria(
-    uid: string,
     peixaria: Peixaria,
     urlDevice: string,
   ): Promise<string> {
@@ -101,7 +125,10 @@ export const PeixariaProvider = ({ children }: any) => {
       let urlStorage = peixaria.urlFoto;
 
       if (urlDevice !== "") {
-        const urlColetada = await sendPeixariaImageToStorage(urlDevice, uid);
+        const urlColetada = await sendPeixariaImageToStorage(
+          urlDevice,
+          peixaria.uid,
+        );
         if (!urlColetada) {
           return "Erro ao atualizar a imagem da peixaria. Tente novamente.";
         }
@@ -116,14 +143,19 @@ export const PeixariaProvider = ({ children }: any) => {
         cnpj: peixaria.cnpj,
         descricao: peixaria.descricao || "",
         urlFoto: urlStorage,
+        ownerId: peixaria.ownerId,
       };
 
-      await setDoc(doc(firestore, "peixarias", uid), peixariaFirestore, {
-        merge: true,
-      });
+      await setDoc(
+        doc(firestore, "peixarias", peixaria.uid),
+        peixariaFirestore,
+        {
+          merge: true,
+        },
+      );
 
       setPeixariaUser({
-        uid: uid,
+        uid: peixaria.uid,
         ...peixariaFirestore,
       });
 
@@ -134,9 +166,31 @@ export const PeixariaProvider = ({ children }: any) => {
     }
   }
 
+  async function delPeixaria(
+    peixariaId: string,
+    ownerId: string,
+  ): Promise<string> {
+    try {
+      await deleteDoc(doc(firestore, "peixarias", peixariaId));
+
+      await setDoc(
+        doc(firestore, "usuarios", ownerId),
+        { temPeixaria: false },
+        { merge: true },
+      );
+
+      setPeixariaUser(null);
+
+      return "OK";
+    } catch (e) {
+      console.error("PeixariaProvider, delPeixaria: " + e);
+      return "Erro ao excluir a peixaria. Contate o suporte.";
+    }
+  }
+
   async function sendPeixariaImageToStorage(
     urlDevice: string,
-    uid: string,
+    peixariaId: string,
   ): Promise<string | null> {
     try {
       const imageRedimencionada = await ImageManipulator.manipulateAsync(
@@ -148,12 +202,15 @@ export const PeixariaProvider = ({ children }: any) => {
       const data = await fetch(imageRedimencionada?.uri);
       const blob = await data.blob();
 
-      const storageRef = ref(storage, `imagens/peixarias/${uid}/logo.png`);
+      const storageRef = ref(
+        storage,
+        `imagens/peixarias/${peixariaId}/logo.png`,
+      );
 
       await uploadBytes(storageRef, blob);
 
       const url = await getDownloadURL(
-        ref(storage, `imagens/peixarias/${uid}/logo.png`),
+        ref(storage, `imagens/peixarias/${peixariaId}/logo.png`),
       );
       return url;
     } catch (error) {
@@ -172,6 +229,7 @@ export const PeixariaProvider = ({ children }: any) => {
         getPeixariaUser,
         registerPeixaria,
         updatePeixaria,
+        delPeixaria,
       }}
     >
       {children}
