@@ -5,8 +5,9 @@ import * as ImagePicker from "expo-image-picker";
 import { useContext, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Text, TextInput, useTheme } from "react-native-paper";
+import { Button, Dialog, Text, TextInput, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 
 import { masks } from "@/utils/masks";
 import * as yup from "yup";
@@ -67,7 +68,7 @@ export default function SignUp() {
     resolver: yupResolver(schema),
   });
 
-  const { signUp } = useContext(AuthContext);
+  const { signUp } = useContext<any>(AuthContext);
   const [exibirSenha, setExibirSenha] = useState(true);
   const [requisitando, setRequisitando] = useState(false);
   const [dialogVisivel, setDialogVisivel] = useState(false);
@@ -324,7 +325,7 @@ export default function SignUp() {
           )}
           <Button
             style={styles.button}
-            mode="outlined"
+            mode="contained"
             onPress={handleSubmit(cadastrar)}
             loading={requisitando}
             disabled={requisitando}
@@ -333,6 +334,36 @@ export default function SignUp() {
           </Button>
         </>
       </ScrollView>
+
+      <Dialog
+        visible={dialogVisivel}
+        onDismiss={() => {
+          setDialogVisivel(false);
+          if (mensagem.tipo === "OK") {
+            router.back();
+          }
+        }}
+      >
+        <Dialog.Icon
+          icon={
+            mensagem.tipo === "OK"
+              ? "checkbox-marked-circle-outline"
+              : "alert-circle-outline"
+          }
+          size={60}
+        />
+        <Dialog.Title style={styles.textDialog}>
+          {mensagem.tipo === "OK" ? "Informação" : "Erro"}
+        </Dialog.Title>
+        <Dialog.Content>
+          <Text style={styles.textDialog} variant="bodyLarge">
+            {mensagem.mensagem}
+          </Text>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={() => setDialogVisivel(false)}>Fechar</Button>
+        </Dialog.Actions>
+      </Dialog>
     </SafeAreaView>
   );
 }

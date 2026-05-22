@@ -39,7 +39,7 @@ const schema = yup
 export default function Perfil({ navigation }: any) {
   const theme = useTheme();
   const { userFirebase, update, del } = useContext<any>(UserContext);
-  
+
   const {
     control,
     handleSubmit,
@@ -67,18 +67,18 @@ export default function Perfil({ navigation }: any) {
   async function atualizarPerfil(data: Usuario) {
     setRequisitando(true);
     setAtualizando(true);
-    
-    data.uid = userFirebase.uid;
-    data.urlFoto = urlDevice !== "" ? urlDevice : (userFirebase?.urlFoto || "");
 
-    const msg = await update(data);
+    data.uid = userFirebase.uid;
+    data.urlFoto = urlDevice !== "" ? urlDevice : userFirebase?.urlFoto || "";
+
+    const msg = await update(data, urlDevice);
 
     if (msg === "OK") {
       setMensagem({
         tipo: "OK",
-        mensagem: "Seu perfil foi atualizado com sucesso.",
+        mensagem: "Seu perfil foi updated com sucesso.",
       });
-      setUrlDevice(""); 
+      setUrlDevice("");
       setDialogErroVisivel(true);
     } else {
       setMensagem({ tipo: "erro", mensagem: msg });

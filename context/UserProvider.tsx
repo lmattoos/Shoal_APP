@@ -7,7 +7,8 @@ import { AuthContext } from "./AuthProvider";
 export const UserContext = createContext({});
 
 export const UserProvider = ({ children }: any) => {
-  const { userAuth, delAccount } = useContext<any>(AuthContext);
+  const { userAuth, delAccount, sendImageToStorage } =
+    useContext<any>(AuthContext);
   const [userFirebase, setUserFirebase] = useState<Usuario | null>(null);
 
   useEffect(() => {
@@ -20,7 +21,7 @@ export const UserProvider = ({ children }: any) => {
 
   async function getUser(): Promise<void> {
     try {
-      if (!userAuth.user) {
+      if (!userAuth?.user) {
         return;
       }
       const docSnap = await getDoc(
@@ -44,24 +45,39 @@ export const UserProvider = ({ children }: any) => {
     }
   }
 
-  async function update(usuario: Usuario): Promise<string> {
+  async function update(usuario: Usuario, urlDevice: string): Promise<string> {
     try {
-      await setDoc(
-        doc(firestore, "usuarios", usuario.uid),
-        {
-          email: usuario.email,
-          nome: usuario.nome,
-          urlFoto: usuario.urlFoto,
-          telefone: usuario.telefone,
-          cpf: usuario.cpf,
-          cnpj: usuario.cnpj,
-        },
-        { merge: true },
-      );
-      setUserFirebase(usuario);
+      let urlStorage = usuario.urlFoto;
+
+      if (urlDevice !== "") {
+        const urlColetada = await sendImageToStorage(urlDevice, usuario.uid);
+        if (!urlColetada) {
+          return "Erro ao atualizar a imagem de perfil. Tente novamente.";
+        }
+        urlStorage = urlColetada;
+      }
+
+      const usuarioFirestore = {
+        email: usuario.email,
+        nome: usuario.nome,
+        urlFoto: urlStorage,
+        telefone: usuario.telefone,
+        cpf: usuario.cpf,
+        cnpj: usuario.cnpj,
+      };
+
+      await setDoc(doc(firestore, "usuarios", usuario.uid), usuarioFirestore, {
+        merge: true,
+      });
+
+      setUserFirebase({
+        uid: usuario.uid,
+        ...usuarioFirestore,
+      });
+
       return "OK";
     } catch (e) {
-      console.error(e);
+      console.error("UserProvider, update: " + e);
       return "Erro ao atualizar o usuário. Contate o suporte.";
     }
   }
