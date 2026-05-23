@@ -29,7 +29,7 @@ export default function TabLayout() {
         name="home"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: () => (
             <Icon
               source="account-group"
               color={theme.colors.primary}
@@ -38,53 +38,59 @@ export default function TabLayout() {
           ),
         }}
       />
-      {possuiPeixaria ? (
-        <>
-          <Tabs.Screen
-            name="peixariaUser"
-            options={{
-              title: "Minha Peixaria",
-              tabBarIcon: ({ color }) => (
-                <Icon
-                  source="store-cog"
-                  color={theme.colors.primary}
-                  size={20}
-                />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="gerenciarPescados"
-            options={{
-              title: "Gerenciar Catálogo",
-              tabBarIcon: ({ color }) => (
-                <Icon source="fish" color={theme.colors.primary} size={20} />
-              ),
-            }}
-          />
-        </>
-      ) : (
-        <Tabs.Screen
-          name="registerPeixaria"
-          options={{
-            title: "Cadastre uma peixaria",
-            tabBarIcon: ({ color }) => (
-              <Icon
-                source="storefront-plus-outline"
-                color={theme.colors.primary}
-                size={20}
-              />
-            ),
-          }}
-        />
-      )}
+      <Tabs.Screen
+        name="peixariaUser"
+        options={{
+          title: "Minha Peixaria",
+          href: possuiPeixaria ? "/peixariaUser" : null,
+          tabBarIcon: () => (
+            <Icon source="store-cog" color={theme.colors.primary} size={20} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="gerenciarPescados"
+        options={{
+          title: "Gerenciar Catálogo",
+          href: possuiPeixaria ? "/gerenciarPescados" : null,
+          tabBarIcon: () => (
+            <Icon source="fish" color={theme.colors.primary} size={20} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="registerPeixaria"
+        options={{
+          title: "Cadastre uma peixaria",
+          href: !possuiPeixaria ? "/registerPeixaria" : null,
+          tabBarIcon: () => (
+            <Icon
+              source="storefront-plus-outline"
+              color={theme.colors.primary}
+              size={20}
+            />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="account"
         options={{
           title: "Conta",
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: () => (
             <Icon source="account" color={theme.colors.primary} size={20} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="editarPescado"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="registerPescado"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

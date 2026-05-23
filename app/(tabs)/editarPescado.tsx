@@ -172,7 +172,9 @@ export default function EditarPescado() {
                   ? { uri: urlDevice }
                   : pescadoParam?.urlFoto && pescadoParam?.urlFoto !== ""
                     ? { uri: pescadoParam.urlFoto }
-                    : require("../assets/images/shoal/Shoal(Anchor-Logo).png")
+                    : {
+                        uri: "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50",
+                      }
               }
             />
             <View style={styles.divButtonsImage}>

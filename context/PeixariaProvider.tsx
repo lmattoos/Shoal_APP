@@ -2,13 +2,13 @@ import { firestore, storage } from "@/firebase/firebaseinit";
 import { Peixaria } from "@/model/Peixaria";
 import * as ImageManipulator from "expo-image-manipulator";
 import {
-  doc,
   collection,
-  query,
-  where,
-  getDocs,
-  setDoc,
   deleteDoc,
+  doc,
+  getDocs,
+  query,
+  setDoc,
+  where,
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -109,6 +109,11 @@ export const PeixariaProvider = ({ children }: any) => {
         { temPeixaria: true },
         { merge: true },
       );
+
+      setPeixariaUser({
+        uid: peixariaId,
+        ...peixariaFirestore,
+      });
 
       return "OK";
     } catch (error: any) {
