@@ -119,6 +119,7 @@ export default function PeixariaUser() {
     const msg = await delPeixaria(peixariaUser.uid, peixariaUser.ownerId);
 
     if (msg === "OK") {
+      router.replace("/(tabs)/home");
       setRequisitando(false);
       setExcluindo(false);
     } else {

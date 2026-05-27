@@ -12,12 +12,12 @@ import {
 import {
   Avatar,
   Card,
+  Chip,
   FAB,
+  IconButton,
   List,
   Searchbar,
   useTheme,
-  Chip,
-  IconButton,
 } from "react-native-paper";
 
 const CATEGORIAS = [
@@ -32,7 +32,7 @@ const CATEGORIAS = [
 
 export default function GerenciarPescados() {
   const theme = useTheme();
-  const { pescadosPeixariaUser, getPescadosPeixaria } =
+  const { pescadosCatalogo, getPescadosPeixaria } =
     useContext<any>(PescadoContext);
   const [searchQueryState, setSearchQuery] = useState("");
   const [categoriaSelecionada, setCategoriaSelecionada] = useState("Todos");
@@ -44,15 +44,19 @@ export default function GerenciarPescados() {
 
   useEffect(() => {
     executarBuscaCombinada(searchQueryState, categoriaSelecionada);
-  }, [searchQueryState, categoriaSelecionada, pescadosPeixariaUser]);
+  }, [searchQueryState, categoriaSelecionada, pescadosCatalogo]);
 
   function executarBuscaCombinada(texto: string, categoria: string) {
+    if (!pescadosCatalogo) {
+      return;
+    }
+
     if (texto === "" && categoria === "Todos") {
       setPescadosSearch([]);
       return;
     }
 
-    let resultado = [...pescadosPeixariaUser];
+    let resultado = [...pescadosCatalogo];
 
     if (categoria !== "Todos") {
       resultado = resultado.filter(
@@ -78,7 +82,7 @@ export default function GerenciarPescados() {
   async function irParaEdicao(pescado: Pescado) {
     router.push({
       pathname: "/editarPescado",
-      params: { pescado: JSON.stringify(pescado) },
+      params: { pescado: encodeURIComponent(JSON.stringify(pescado)) },
     });
     clearSearch();
   }
@@ -149,7 +153,8 @@ export default function GerenciarPescados() {
                   />
                 </Card>
               ))
-            : pescadosPeixariaUser.map((pescado: Pescado, key: number) => (
+            : pescadosCatalogo &&
+              pescadosCatalogo.map((pescado: Pescado, key: number) => (
                 <Card
                   key={key}
                   style={{

@@ -49,7 +49,7 @@ const schema = yup.object().shape({
 export default function EditarPescado() {
   const theme = useTheme();
   const { pescado } = useLocalSearchParams();
-  const pescadoParam = JSON.parse(pescado.toString());
+  const pescadoParam = JSON.parse(decodeURIComponent(pescado.toString()));
   const { updatePescado, delPescado } = useContext<any>(PescadoContext);
 
   const {
@@ -116,8 +116,9 @@ export default function EditarPescado() {
     if (msg === "OK") {
       setMensagem({
         tipo: "OK",
-        mensagem: "Pescadi excluído",
+        mensagem: "Pescado excluído",
       });
+      router.push("/gerenciarPescados");
       setDialogErroVisivel(true);
     } else {
       setMensagem({ tipo: "erro", mensagem: msg });
@@ -173,7 +174,7 @@ export default function EditarPescado() {
                   : pescadoParam?.urlFoto && pescadoParam?.urlFoto !== ""
                     ? { uri: pescadoParam.urlFoto }
                     : {
-                        uri: "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50",
+                        uri: "https://api.dicebear.com/7.x/identicon/svg?seed=shoal-store&backgroundColor=0a58ca&color=ffffff",
                       }
               }
             />
@@ -417,7 +418,16 @@ export default function EditarPescado() {
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setDialogErroVisivel(false)}>Fechar</Button>
+            <Button
+              onPress={() => {
+                setDialogErroVisivel(false);
+                if (mensagem.tipo === "OK") {
+                  router.push("/gerenciarPescados");
+                }
+              }}
+            >
+              Fechar
+            </Button>
           </Dialog.Actions>
         </Dialog>
       </KeyboardAvoidingView>

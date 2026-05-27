@@ -87,7 +87,7 @@ export default function RegisterPescado() {
     const msg = await registerPescado(data as Pescado, urlDevice);
     if (msg === "OK") {
       setRequisitando(false);
-      router.back();
+      router.push("/gerenciarPescados");
     } else {
       setMensagem({ tipo: "error", mensagem: msg });
       setDialogVisivel(true);

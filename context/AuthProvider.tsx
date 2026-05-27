@@ -184,6 +184,7 @@ export const AuthProvider = ({ children }: any) => {
         recuperaCredencialdaCache,
         delAccount,
         userAuth,
+        sendImageToStorage,
       }}
     >
       {children}

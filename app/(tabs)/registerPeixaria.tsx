@@ -82,7 +82,7 @@ export default function RegPeixaria() {
     }
 
     setRequisitando(true);
-    const msg = await registerPeixaria(userAuth?.user?.uid, data, urlDevice);
+    const msg = await registerPeixaria(data, urlDevice);
     if (msg === "OK") {
       setRequisitando(false);
       router.replace("/(tabs)/peixariaUser");
@@ -133,7 +133,7 @@ export default function RegPeixaria() {
                 urlDevice !== ""
                   ? { uri: urlDevice }
                   : {
-                      uri: "https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50",
+                      uri: "https://api.dicebear.com/7.x/identicon/svg?seed=shoal-store&backgroundColor=0a58ca&color=ffffff",
                     }
               }
             />

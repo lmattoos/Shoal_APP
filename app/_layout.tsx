@@ -1,5 +1,6 @@
 import { AuthProvider } from "@/context/AuthProvider";
 import { PeixariaProvider } from "@/context/PeixariaProvider";
+import { PescadoProvider } from "@/context/PescadoProvider";
 import { UserProvider } from "@/context/UserProvider";
 import { Stack } from "expo-router";
 import { useColorScheme } from "react-native";
@@ -31,16 +32,18 @@ export default function RootLayout() {
       <AuthProvider>
         <UserProvider>
           <PeixariaProvider>
-            <Stack
-              initialRouteName="index"
-              screenOptions={{
-                headerShown: false,
-              }}
-            >
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="entrar" />
-              <Stack.Screen name="signUp" />
-            </Stack>
+            <PescadoProvider>
+              <Stack
+                initialRouteName="index"
+                screenOptions={{
+                  headerShown: false,
+                }}
+              >
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="entrar" />
+                <Stack.Screen name="signUp" />
+              </Stack>
+            </PescadoProvider>
           </PeixariaProvider>
         </UserProvider>
       </AuthProvider>

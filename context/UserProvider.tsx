@@ -48,9 +48,10 @@ export const UserProvider = ({ children }: any) => {
   async function update(usuario: Usuario, urlDevice: string): Promise<string> {
     try {
       let urlStorage = usuario.urlFoto;
+      let loggedUid = userAuth.user.uid;
 
       if (urlDevice !== "") {
-        const urlColetada = await sendImageToStorage(urlDevice, usuario.uid);
+        const urlColetada = await sendImageToStorage(urlDevice, loggedUid);
         if (!urlColetada) {
           return "Erro ao atualizar a imagem de perfil. Tente novamente.";
         }
@@ -66,19 +67,19 @@ export const UserProvider = ({ children }: any) => {
         cnpj: usuario.cnpj,
       };
 
-      await setDoc(doc(firestore, "usuarios", usuario.uid), usuarioFirestore, {
+      await setDoc(doc(firestore, "usuarios", loggedUid), usuarioFirestore, {
         merge: true,
       });
 
       setUserFirebase({
-        uid: usuario.uid,
+        uid: loggedUid,
         ...usuarioFirestore,
       });
 
       return "OK";
     } catch (e) {
-      console.error("UserProvider, update: " + e);
-      return "Erro ao atualizar o usuário. Contate o suporte.";
+      console.error("ERRO REAL DETALHADO:", e?.message || e);
+      return `Erro ao atualizar o usuário. Detalhe: ${e?.message || e}`;
     }
   }
 

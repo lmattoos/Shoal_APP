@@ -185,7 +185,6 @@ export const PeixariaProvider = ({ children }: any) => {
       );
 
       setPeixariaUser(null);
-
       return "OK";
     } catch (e) {
       console.error("PeixariaProvider, delPeixaria: " + e);
