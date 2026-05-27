@@ -1,10 +1,10 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 #firebase
-firebaseconfig.ts
+#firebaseconfig.ts
 
 #Google Service
-google-service.json
+#google-service.json
 
 # dependencies
 node_modules/

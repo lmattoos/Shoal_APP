@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "912822744557",
+    "project_id": "pdm-aulas-93765",
+    "storage_bucket": "pdm-aulas-93765.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:912822744557:android:80e09f87bdc14d4a5323e4",
+        "android_client_info": {
+          "package_name": "com.lmattoos.shoal_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACMmLb4fczAGmBi0qwAW2ZJo3uOCg81sA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
